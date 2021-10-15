@@ -94,7 +94,7 @@ int encrypt_cbc(std::vector<BYTE> plaintext, const BYTE * IV, BYTE ciphertext[],
         
         memcpy(iv_buf, IV, AES_BLOCK_SIZE);
                 
-        // Start at 1 because IV is first block
+        
         for (idx = 0; idx < blocks; idx++) {
             memcpy(plaintext_block, &plaintext[idx * AES_BLOCK_SIZE], AES_BLOCK_SIZE);
             for (idx2 = 0; idx2 < AES_BLOCK_SIZE; idx2++) {
@@ -130,7 +130,6 @@ int decrypt_cbc(const BYTE* ciphertext, std::vector<BYTE> &decrypted_plaintext, 
     
     // Decrypt the ciphertext, Ciphertext size minus an IV
 
-    // MAIN LOOP
     // XOR decrypted block and IV
     for (int idx2 = 1; idx2 < blocks+1; idx2++)
     {
@@ -140,12 +139,10 @@ int decrypt_cbc(const BYTE* ciphertext, std::vector<BYTE> &decrypted_plaintext, 
         for (int idx2 = 0; idx2 < AES_BLOCK_SIZE; idx2++) {
             xor_block[idx2] = iv_buf[idx2] ^ decrypted_block[idx2];
         }
-        std::cout<<"decrypted_plaintext size - "<<decrypted_plaintext.size()<<std::endl;
-        for(size_t i = 0; i <AES_BLOCK_SIZE; i++)
+        for(size_t i = 0; i < AES_BLOCK_SIZE; i++)
         {
             decrypted_plaintext.push_back(xor_block[i]);
         }
-        std::cout<<"decrypted_plaintext size 2- "<<decrypted_plaintext.size()<<std::endl;
         memcpy(iv_buf, cipher_block, AES_BLOCK_SIZE);
     }
     
@@ -272,9 +269,9 @@ int read_file()
     {
         bytes.push_back(byte);
     }
-    std::copy(bytes.begin(), bytes.end(), 
-            std::ostream_iterator<char>(std::cout, ""));
-    std::cout<<std::endl;
+    // std::copy(bytes.begin(), bytes.end(), 
+    //         std::ostream_iterator<char>(std::cout, ""));
+    // std::cout<<std::endl;
     input_file.close();
     return EXIT_SUCCESS;
 
@@ -286,13 +283,11 @@ std::vector<std::string> GetFileNames(int argc, char* argv[])
 
     if(argc > 5 and strcmp(argv[2], "-p")==0)
     {
-        std::cout<<"true";
         
         int file1 = 5;
 
         while(file1 < argc)
         {
-            std::cout<<file1<<std::endl;
             
             if(files.end() != std::find(files.begin(), files.end(), argv[file1]))
             {

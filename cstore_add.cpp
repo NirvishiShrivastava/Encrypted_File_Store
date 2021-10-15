@@ -9,7 +9,6 @@
 int cstore_add(char* password, char* archivename, std::vector<std::string> &files)
 {
 	BYTE final_hash[SHA256_BLOCK_SIZE];
-	std::vector<BYTE> decrypted_text;
     char byte = 0;
 	int blocks=0;
 	BYTE IV[AES_BLOCK_SIZE];
@@ -67,8 +66,7 @@ int cstore_add(char* password, char* archivename, std::vector<std::string> &file
 
 		archive_name << filename << "<->";
 		archive_name << blocks << "<->";
-		archive_name << ciphertext;
-		archive_name << "<---->";
+		archive_name << ciphertext<<"<->"<<std::endl;
 		archive_name.close();
 		std::cout<<filename<<" added successfully to archive!"<<std::endl;
 		file_name.close();

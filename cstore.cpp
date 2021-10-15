@@ -31,7 +31,6 @@ int main(int argc, char* argv[])
         // Might not be a bad idea to check here if you can successfully open the files, 
         // Check the correct order, etc.
         std::vector<std::string> files = GetFileNames(argc, argv);
-        //std::cout<<&files[0]<<std::endl;
 
         if(function == "add")
         {
@@ -40,7 +39,8 @@ int main(int argc, char* argv[])
 
         if(function == "extract")
         {
-            return cstore_extract();
+            return cstore_extract(argv[3], argv[4], files);
+;
         }
 
         if(function == "delete")
