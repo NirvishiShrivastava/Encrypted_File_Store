@@ -7,6 +7,7 @@
 #include "cstore_delete.h"
 #include "cstore_utils.h"
 
+
 int main(int argc, char* argv[])
 {
     std::string filename;
@@ -29,9 +30,12 @@ int main(int argc, char* argv[])
         // You will need to Parse Args/Check your arguments.
         // Might not be a bad idea to check here if you can successfully open the files, 
         // Check the correct order, etc.
+        std::vector<std::string> files = GetFileNames(argc, argv);
+        //std::cout<<&files[0]<<std::endl;
+
         if(function == "add")
         {
-            return cstore_add(argv[3], argv[4], argv[5]);
+            return cstore_add(argv[3], argv[4], files);
         }
 
         if(function == "extract")
