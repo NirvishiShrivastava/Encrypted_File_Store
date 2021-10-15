@@ -129,10 +129,11 @@ int decrypt_cbc(const BYTE* ciphertext, std::vector<BYTE> &decrypted_plaintext, 
             xor_block[idx2] = iv_buf[idx2] ^ decrypted_block[idx2];
         }
         std::cout<<"decrypted_plaintext size - "<<decrypted_plaintext.size()<<std::endl;
-        std::copy(std::begin(xor_block), std::end(xor_block), decrypted_plaintext.begin());
+        for(size_t i = 0; i <AES_BLOCK_SIZE; i++)
+        {
+            decrypted_plaintext.push_back(xor_block[i]);
+        }
         std::cout<<"decrypted_plaintext size 2- "<<decrypted_plaintext.size()<<std::endl;
-
-        //memcpy(&decrypted_plaintext[(idx2-1) * AES_BLOCK_SIZE], xor_block, AES_BLOCK_SIZE);
         memcpy(iv_buf, cipher_block, AES_BLOCK_SIZE);
     }
     

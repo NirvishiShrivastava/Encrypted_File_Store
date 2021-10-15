@@ -10,7 +10,7 @@ int cstore_add(char* password, char* archivename, char* filename)
 {
 	BYTE final_hash[SHA256_BLOCK_SIZE];
 	std::vector<BYTE> plaintext;
-	
+	std::vector<BYTE> decrypted_text;
     char byte = 0;
 	int num_blocks=0;
 	BYTE* IV = (BYTE*) malloc(AES_BLOCK_SIZE);
@@ -45,6 +45,7 @@ int cstore_add(char* password, char* archivename, char* filename)
 
     // Encrypt
 	num_blocks = encrypt_cbc(plaintext, IV, ciphertext, final_hash, SHA256_BLOCK_SIZE);
+	std::cout<<"Blocks number -- "<<num_blocks<<std::endl;
 	std::ofstream archive_name(archivename);
 	
     if(!archive_name.is_open())
@@ -54,10 +55,8 @@ int cstore_add(char* password, char* archivename, char* filename)
     }
 	archive_name << ciphertext << std::endl;
 	
-	
-	std::vector<BYTE> decrypted_text;
-	decrypted_text.push_back(0);
-	decrypt_cbc(ciphertext,decrypted_text,final_hash,SHA256_BLOCK_SIZE,num_blocks);
+	// Decrypt
+	decrypt_cbc(ciphertext, decrypted_text, final_hash, SHA256_BLOCK_SIZE, num_blocks);
 	
 	std::cout<<"Decrypted size -- "<<decrypted_text.size()<<std::endl;
 	//Printing decrypted text
