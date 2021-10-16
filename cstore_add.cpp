@@ -60,13 +60,14 @@ int cstore_add(char* password, char* archivename, std::vector<std::string> &file
 		// Encrypt
 		encrypt_cbc(plaintext, IV, ciphertext, final_hash, SHA256_BLOCK_SIZE, blocks);
 
+		std::cout<<"Ciphertext from ADD --- "<<ciphertext<<std::endl;
 		std::cout<<"Blocks number -- "<<blocks<<std::endl;
 		
 		archive_name.open(archivename, std::ios::app);
-
-		archive_name << filename << "<->";
-		archive_name << blocks << "<->";
-		archive_name << ciphertext<<"<->"<<std::endl;
+		
+		archive_name << filename << "[*#]";
+		archive_name << blocks << "[*#]";
+		archive_name << ciphertext<<"[*#]"<<std::endl;
 		archive_name.close();
 		std::cout<<filename<<" added successfully to archive!"<<std::endl;
 		file_name.close();

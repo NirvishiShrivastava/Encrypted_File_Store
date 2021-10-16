@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
         if(function == "extract")
         {
             return cstore_extract(argv[3], argv[4], files);
-;
+
         }
 
         if(function == "delete")

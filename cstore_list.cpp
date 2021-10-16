@@ -18,7 +18,7 @@ int cstore_list(std::string archivename)
 
     std::fstream archive_name(archivename);
     std::string filedata;
-    std::string delim = "<->";
+    std::string delim = "[*#]";
 	size_t pos = 0;
     std::vector<std::string> filedata_vector;
 	std::vector<std::string> filename_list;
