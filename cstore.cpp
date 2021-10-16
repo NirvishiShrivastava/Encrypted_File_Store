@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
 
         if(function == "delete")
         {
-            return cstore_delete();
+            return cstore_delete(argv[3], argv[4], files);
         }
     }
     else

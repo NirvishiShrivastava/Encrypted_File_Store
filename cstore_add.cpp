@@ -67,14 +67,14 @@ int cstore_add(char* password, char* archivename, std::vector<std::string> &file
 		
 		archive_name << filename << "[*#]";
 		archive_name << blocks << "[*#]";
-		archive_name << ciphertext<<"[*#]"<<std::endl;
+		archive_name << ciphertext<<"[*#]";
 		archive_name.close();
 		std::cout<<filename<<" added successfully to archive!"<<std::endl;
 		file_name.close();
 
 	}
 
-	
+	archive_name.close();
 	
 	// If existing archive exists you can use helper function
 	// Read old HMAC, recompute HMAC and compare...
