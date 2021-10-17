@@ -2,6 +2,7 @@
 #include <cstring>
 #include "cstore_add.h"
 #include "cstore_utils.h"
+#include "cstore_delete.h"
 #include "crypto_lib/sha256.h"
 #include <vector>
 #include <iostream>
@@ -25,19 +26,27 @@ int cstore_extract(char* password, char* archivename, std::vector<std::string> &
 	std::string filedata, filedata_hmac, hmac_delim = "<*&>", delim = "[#]";
 	std::vector<std::string> filedata_vector;
 	size_t pos = 0, pos1 = 0;
-	int blocks;
+	int blocks, archive_exists;
 	std::vector<std::string>::iterator it;
 	BYTE hash[SHA256_BLOCK_SIZE];
 
 	// Create Key
 	iterate_sha256(password, hash, 10000);
-
+	
+	
 	// Check if archive exists
-    if(!archive_name.is_open())
-    {
-        std::cerr<<"The archive does not exist!!"<<archivename<<" "<<std::endl;
-        return EXIT_FAILURE;
-    }
+	archive_exists = verify_archive_exists(archivename);
+	if(archive_exists)
+	{
+		int hmac_is_same = verify_hmacs(archivename, hash);
+
+		if(!hmac_is_same)
+		{
+			std::cerr<<"Wrong password / archive has been modified!"<<std::endl;
+			return EXIT_FAILURE;
+		}
+	}
+
 
 	filedata_hmac = std::string((std::istreambuf_iterator<char>(archive_name)), std::istreambuf_iterator<char>());
 	
@@ -47,7 +56,6 @@ int cstore_extract(char* password, char* archivename, std::vector<std::string> &
 	{
 		filedata_vector.push_back(filedata_hmac.substr(0, pos));
 		filedata_hmac.erase(0, pos + hmac_delim.length());
-		std::cout<<"\n=====================TRUNCATE HMAC FROM ARCHIVE=============";
 
 	}
 
@@ -74,7 +82,6 @@ int cstore_extract(char* password, char* archivename, std::vector<std::string> &
 		it = std::find(filedata_vector.begin(),filedata_vector.end(),files[file_iter]);
 
    		int file_pos = std::distance(filedata_vector.begin(), it);
-		std::cout<<"Printing file pos for tracing block --"<<file_pos<<std::endl;
 		
 		// Blocks are next to filename
 		std::cout<<"Printing block in str----"<<filedata_vector[file_pos+1]<<std::endl;
@@ -110,9 +117,19 @@ int cstore_extract(char* password, char* archivename, std::vector<std::string> &
 		
 		std::cout<<"Decrypted size -- "<<decrypted_text.size()<<std::endl;
 
+		
+		std::ofstream outfile("output.txt", std::ios::out);
+		outfile.write((const char *)&decrypted_text[0], decrypted_text.size());
+		outfile.close();
+		file_name.close();
+		
+		// Rename and replace file_name with output
+		remove(filename.c_str());
+		rename("output.txt",filename.c_str());
 		//Printing decrypted text
 		std::copy(decrypted_text.begin(), decrypted_text.end(), std::ostream_iterator<char>(std::cout, ""));
 	}
+	cstore_delete(password, archivename, files);
 
 	return 0;
 	
