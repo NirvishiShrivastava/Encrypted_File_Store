@@ -34,9 +34,8 @@ int cstore_extract(char* password, char* archivename, std::vector<std::string> &
         std::cerr<<"The archive does not exist!!"<<archivename<<" "<<std::endl;
         return EXIT_FAILURE;
     }
-	std::cout<<"\n Parsed DATA \n";
-	// Read archive data to a string line by line and push in filedata_vector
 	
+	// Read archive data to a string line by line and push in filedata_vector
 	filedata = string((std::istreambuf_iterator<char>(archive_name)), std::istreambuf_iterator<char>());
 	std::cout<<"File data =="<<filedata<<std::endl;
 	

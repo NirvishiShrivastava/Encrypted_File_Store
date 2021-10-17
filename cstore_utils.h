@@ -13,7 +13,9 @@ void show_usage(std::string name);
 
 int hmac(const BYTE* message, const BYTE* key, BYTE* out_tag, int message_len, int key_len);
 
-int read_mac_archive(const std::string archivename, BYTE* file_mac, std::vector<BYTE> &file_content, int mac_len);
+int read_old_hmac(char* archivename, BYTE* file_mac);
+
+int compute_new_hmac(char* archivename, BYTE* out_tag, const BYTE* key);
 
 int encrypt_cbc(std::vector<BYTE> plaintext, const BYTE* IV, BYTE ciphertext[], BYTE key[], int keysize, int blocks);
 
@@ -38,6 +40,10 @@ void print_hex(const std::vector<BYTE> byte_arr);
 int read_file();
 
 std::vector<std::string> GetFileNames(int argc, char* argv[]);
+
+int verify_archive_exists(char* archivename);
+
+int verify_hmacs(char* archivename, const BYTE* key);
 
 
 #endif

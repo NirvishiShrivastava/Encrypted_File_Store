@@ -19,38 +19,63 @@ int cstore_delete(char* password, char* archivename, std::vector<std::string> &f
 	// Compute HMAC
 	// Recompute HMAC, etc.
 
-	std::fstream archive_name(archivename);
-    std::string filedata;
-    std::string delim = "[*#]";
-	size_t pos = 0;
+    std::string filedata_hmac, delim = "[#]", hmac_delim = "<*&>", hmac;
+	size_t pos = 0, pos1 = 0, archive_exists;
     std::vector<std::string> filedata_vector;
 	std::vector<std::string> filename_list;
+	std::vector<std::string>::iterator it;
+	BYTE final_hash[SHA256_BLOCK_SIZE];
+
 
 	std::cout<<"Delete called"<<std::endl;
-    // Check if archive exists
-    if(!archive_name.is_open())
-    {
-        std::cerr<<"The archive name - "<<archivename<<" does not exist!!"<<std::endl;
-        return EXIT_FAILURE;
-    }
+	std::fstream archive_name(archivename);
 
-	// Read archive data to a string line by line and push in filedata_vector
-	while(getline(archive_name, filedata))
+	// Create Key
+	iterate_sha256(password, final_hash, 10000);
+	
+	// Check if archive exists
+	archive_exists = verify_archive_exists(archivename);
+	if(archive_exists)
 	{
-		while ((pos = filedata.find(delim)) != std::string::npos) 
+		int hmac_is_same = verify_hmacs(archivename, final_hash);
+		std::cout<<"HMAC IS SAME?-----"<<hmac_is_same<<std::endl;
+
+		if(!hmac_is_same)
 		{
-			filedata_vector.push_back(filedata.substr(0, pos));
-			filedata.erase(0, pos + delim.length());
-    	}
+			std::cerr<<"Wrong password / archive has been modified!"<<std::endl;
+			return EXIT_FAILURE;
+		}
 	}
+
+    
+	filedata_hmac = std::string((std::istreambuf_iterator<char>(archive_name)), std::istreambuf_iterator<char>());
+	
 	archive_name.close();
 
-    //All Filenames will be at positions 0,3...
-	for(int i=0; i < filedata_vector.size();)
+	if((pos = filedata_hmac.find(hmac_delim)) != std::string::npos) 
 	{
-		filename_list.push_back(filedata_vector[i]);
-		i += 3;
+		filedata_vector.push_back(filedata_hmac.substr(0, pos));
+		filedata_hmac.erase(0, pos + hmac_delim.length());
+		std::cout<<"\n=====================TRUNCATE HMAC FROM ARCHIVE=============";
+
 	}
+
+	filedata_vector.clear();
+
+	// Read archive data to a string line by line and push in filedata_vector
+	while ((pos1 = filedata_hmac.find(delim)) != std::string::npos) 
+	{
+		filedata_vector.push_back(filedata_hmac.substr(0, pos1));
+		filedata_hmac.erase(0, pos1 + delim.length());
+	}
+
+
+    //All Filenames will be at positions 0,3...
+	// for(int i=0; i < filedata_vector.size();)
+	// {
+	// 	filename_list.push_back(filedata_vector[i]);
+	// 	i += 3;
+	// }
 
 	// Iterate through archive and see which files to delete
 	for (int file_iter = 0; file_iter < files.size(); file_iter++) 
@@ -76,22 +101,59 @@ int cstore_delete(char* password, char* archivename, std::vector<std::string> &f
 		}
 	}
 
-	std::ofstream temp("temp.txt", std::ios::trunc);
-
-	std::cout<<"Post delete loop"<<std::endl;
-
-    for (int i=0; i<filedata_vector.size(); ++i){
-		std::cout<<filedata_vector[i]<<std::endl;
-		temp<<filedata_vector[i]<<"[*#]";
+	// If last file present was deleted, delete archive
+	if(filedata_vector.size() == 0)
+	{
+		remove(archivename);
+		std::cout<<"The last file from archive was deleted, removing archive"<<std::endl;
 	}
-    
-    archive_name.close();
-	temp.close();
-	
-	// Rename and replace archive with temp
-	remove(archivename);
-	rename("temp.txt",archivename);
+	else
+	{
+		std::ofstream temp("temp.txt", std::ios::trunc);
+		std::cout<<"Post delete loop"<<std::endl;
 
+		// Add just the updated message content
+		for (int i=0; i<filedata_vector.size(); ++i)
+		{
+			temp<<filedata_vector[i]<<"[#]";
+		}
+		
+		// archive_name.close();
+		temp.close();
+		
+		// Rename and replace archive with temp
+		remove(archivename);
+		rename("temp.txt",archivename);
+
+		/** Update HMAC **/
+		std::string filedata;
+
+		std::ifstream archive_name;
+		archive_name.open(archivename);
+		BYTE* new_hmac = (BYTE*) malloc(sizeof(BYTE) * SHA256_BLOCK_SIZE);
+
+		compute_new_hmac(archivename, new_hmac, final_hash);
+		
+		
+		std::cout<<"\n\n======================DOES IT PRINT THIS=========333333333==";
+		
+		// Push new hmac to begin of file
+		std::ofstream temp2("temp2.txt", std::ios::trunc);
+		temp2 << (char*)new_hmac << "<*&>";
+
+		// Input vector here
+		for (int i=0; i<filedata_vector.size(); ++i)
+		{
+			temp2<<filedata_vector[i]<<"[#]";
+		}
+		temp2.close();
+		archive_name.close();
+
+		// Rename and replace archive with temp2
+		remove(archivename);
+		rename("temp2.txt",archivename);
+
+	}	
 
 	return 0;
 }
