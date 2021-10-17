@@ -28,38 +28,6 @@ int read_old_hmac(char* archivename, BYTE* file_mac)
     int archive_len, message_len;
     // string filedata;
     int pos=0;
-    // string delim = "[*#]";
-	// std::vector<std::string> filedata_vector;
-
-    // I/O: Open old archivename
-    // std::ifstream archive_name(archivename, std::ios::in);
-    // if(!archive_name.is_open())
-    // {
-    //     std::cerr<<"The archive name - "<<archivename<<" does not exist!!"<<std::endl;
-    //     return EXIT_FAILURE;
-    // }
-
-    // // Read archive data to a string line by line and push in filedata_vector
-	// filedata = string((std::istreambuf_iterator<char>(archive_name)), std::istreambuf_iterator<char>());
-	// archive_len = filedata.length();
-
-	// while ((pos = filedata.find(delim)) != string::npos) 
-	// {
-	// 	filedata_vector.push_back(filedata.substr(0, pos));
-	// 	filedata.erase(0, pos + delim.length());
-	// }
-    // int mac_len = string(filedata_vector[1]).length();
-    // std::cout<<"\n My old hash is ---->>> "<<filedata_vector[1];
-    // std::cout<<"old hash in read_old_hmac ===="<<std::endl;
-    
-
-    // // Fetching hmac
-    // for(int i = 0; i < mac_len; i++)
-    // {
-    //     file_mac[i] = filedata_vector[1][i];
-    // }
-    // print_hex(file_mac,mac_len);
-    
     BYTE* array;
     int mac_len =0;
     std::vector<BYTE> hmac_str;
@@ -110,6 +78,7 @@ int read_old_hmac(char* archivename, BYTE* file_mac)
     {
         memcpy(file_mac,&hmac_str[0],hmac_str.size());
     }
+    int ret = hmac_str.size();
     hmac_str.clear();
     return SHA256_BLOCK_SIZE;
     
@@ -123,28 +92,6 @@ int compute_new_hmac(char* archivename, BYTE* out_tag, const BYTE* key)
     int pos=0;
 	std::vector<std::string> filedata_vector;
     // I/O: Open old archivename
-    
-
-    // Read archive data to a string line by line and push in filedata_vector
-	// filedata = string((std::istreambuf_iterator<char>(archive_name)), std::istreambuf_iterator<char>());
-	// archive_len = filedata.length();
-	// while ((pos = filedata.find(delim)) != string::npos) 
-	// {
-	// 	filedata_vector.push_back(filedata.substr(0, pos));
-	// 	filedata.erase(0, pos + delim.length());
-	// }
-    // int mac_len = (filedata_vector[1]).length();
-    // std::cout << "\n ---> Hello 3";
-    // // Fetching message
-    // int hmac_length = mac_len + 12;
-    // message_len = archive_len - hmac_length;
-    // BYTE* message = (BYTE*) malloc(sizeof(BYTE) * message_len);
-    // for(int i =0; i < message_len; i++)
-    // {
-    //     message[i] = filedata[hmac_length];
-    //     hmac_length++;
-    // }
-    
 
     BYTE* array;
     int mac_len =0;
@@ -228,15 +175,7 @@ int verify_hmacs(char* archivename, const BYTE* key)
     //std::cout<<"LENGTH OF OLD HMAC"<<len<<std::cout;
     int res = memcmp (new_hmac, old_hmac, len);
     std::cout << "\n  Size of length variable is "<<len;
-    // for(int i = 0; i < (sizeof(BYTE) * SHA256_BLOCK_SIZE); i++)
-    // {
-    //     if (new_hmac[i] != old_hmac[i])
-    //     {
-    //         std::cout<<"Not equal, breaking"<<std::endl;
-    //         res = 1;
-    //     }
-
-    // }
+    
     std::cout<<"RES == "<<res<<std::endl;
     if(res == 0)
     {
@@ -519,30 +458,6 @@ void print_hex(const std::vector<BYTE> byte_arr)
     }
 }
 
-int read_file()
-{
-    std::string filename("test.txt");
-    std::vector<BYTE> bytes;
-    char byte = 0;
-    std::ifstream input_file(filename);
-
-    if(!input_file.is_open())
-    {
-        std::cerr<<"Could not open the file!"<<filename<<" "<<std::endl;
-        return EXIT_FAILURE;
-    }
-
-    while(input_file.get(byte))
-    {
-        bytes.push_back(byte);
-    }
-    // std::copy(bytes.begin(), bytes.end(), 
-    //         std::ostream_iterator<char>(std::cout, ""));
-    // std::cout<<std::endl;
-    input_file.close();
-    return EXIT_SUCCESS;
-
-}
 
 std::vector<std::string> GetFileNames(int argc, char* argv[])
 {

@@ -22,11 +22,15 @@ int cstore_extract(char* password, char* archivename, std::vector<std::string> &
 	// Loop over archive for files to extract and write to CWD
 
 	std::fstream archive_name(archivename);
-	std::string filedata;
+	std::string filedata, filedata_hmac, hmac_delim = "<*&>", delim = "[#]";
 	std::vector<std::string> filedata_vector;
-	std::string delim = "[*#]";
-	size_t pos = 0;
+	size_t pos = 0, pos1 = 0;
+	int blocks;
 	std::vector<std::string>::iterator it;
+	BYTE hash[SHA256_BLOCK_SIZE];
+
+	// Create Key
+	iterate_sha256(password, hash, 10000);
 
 	// Check if archive exists
     if(!archive_name.is_open())
@@ -34,59 +38,72 @@ int cstore_extract(char* password, char* archivename, std::vector<std::string> &
         std::cerr<<"The archive does not exist!!"<<archivename<<" "<<std::endl;
         return EXIT_FAILURE;
     }
+
+	filedata_hmac = std::string((std::istreambuf_iterator<char>(archive_name)), std::istreambuf_iterator<char>());
 	
-	// Read archive data to a string line by line and push in filedata_vector
-	filedata = string((std::istreambuf_iterator<char>(archive_name)), std::istreambuf_iterator<char>());
-	std::cout<<"File data =="<<filedata<<std::endl;
-	
-	while ((pos = filedata.find(delim)) != std::string::npos) 
+	archive_name.close();
+
+	if((pos = filedata_hmac.find(hmac_delim)) != std::string::npos) 
 	{
-		std::cout<<filedata.substr(0, pos)<<std::endl;
-		filedata_vector.push_back(filedata.substr(0, pos));
-		filedata.erase(0, pos + delim.length());
+		filedata_vector.push_back(filedata_hmac.substr(0, pos));
+		filedata_hmac.erase(0, pos + hmac_delim.length());
+		std::cout<<"\n=====================TRUNCATE HMAC FROM ARCHIVE=============";
+
 	}
 
-	// while(getline(archive_name, filedata))
-	// {
-	// 	while ((pos = filedata.find(delim)) != std::string::npos) 
-	// 	{
-	// 		std::cout<<filedata.substr(0, pos)<<std::endl;
-	// 		filedata_vector.push_back(filedata.substr(0, pos));
-	// 		filedata.erase(0, pos + delim.length());
-    // 	}
-	// }
+	filedata_vector.clear();
+
+	// Read archive data to a string line by line and push in filedata_vector
+	while ((pos1 = filedata_hmac.find(delim)) != std::string::npos) 
+	{
+		filedata_vector.push_back(filedata_hmac.substr(0, pos1));
+		filedata_hmac.erase(0, pos1 + delim.length());
+	}
+
 	std::cout<<"Printing Vector From now"<<std::endl;
 	for(int i = 0; i < filedata_vector.size();i++)
 	{
 		std::cout<<filedata_vector[i]<<std::endl;
 	}
 	std::cout<<"Printing Vector Ends now"<<std::endl;
-    archive_name.close();
 
+	// Extraction loop
 	for (int file_iter = 0; file_iter < files.size(); file_iter++) 
 	{
 		// Finding position of filename in filedata_vector
 		it = std::find(filedata_vector.begin(),filedata_vector.end(),files[file_iter]);
+
    		int file_pos = std::distance(filedata_vector.begin(), it);
 		std::cout<<"Printing file pos for tracing block --"<<file_pos<<std::endl;
+		
 		// Blocks are next to filename
 		std::cout<<"Printing block in str----"<<filedata_vector[file_pos+1]<<std::endl;
-		int blocks = std::stoi(filedata_vector[file_pos+1]);
+		
+		try 
+		{
+			blocks = std::stoi(filedata_vector[file_pos+1]);
+		}
+		catch(std::invalid_argument& e)
+		{
+			std::cerr<<"Blocks should be an int."<<std::endl;
+		}
+		
 
 		BYTE ciphertext[(blocks) * AES_BLOCK_SIZE];
-		BYTE hash[SHA256_BLOCK_SIZE];
+		
 		std::vector<BYTE> plaintext;
 		std::string filename = files[file_iter];
 		std::ifstream file_name(filename);
 		std::vector<BYTE> decrypted_text;
 
-		std::cout<<"\nblocks from file vector -- "<<blocks<<std::endl;
+		std::cout<<"\n Blocks from file vector -- "<<blocks<<std::endl;
 
 		std::string cp = filedata_vector[file_pos+2];
+		std::cout<<"\n Respective cp -- "<<cp<<std::endl;
 		memcpy(ciphertext, cp.data(), cp.length());
 		
-		// Create Key
-		iterate_sha256(password, hash, 10000);
+		// // Create Key
+		// iterate_sha256(password, hash, 10000);
 		
 		// Decrypt
 		decrypt_cbc(ciphertext, decrypted_text, hash, SHA256_BLOCK_SIZE, blocks);

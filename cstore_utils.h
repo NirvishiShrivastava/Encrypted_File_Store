@@ -37,8 +37,6 @@ void print_hex(const BYTE* byte_arr, int len);
 
 void print_hex(const std::vector<BYTE> byte_arr);
 
-int read_file();
-
 std::vector<std::string> GetFileNames(int argc, char* argv[]);
 
 int verify_archive_exists(char* archivename);

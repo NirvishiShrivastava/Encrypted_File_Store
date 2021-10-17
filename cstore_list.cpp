@@ -17,12 +17,13 @@ int cstore_list(std::string archivename)
     // You could check to see if it at least has an HMAC?
 
     std::fstream archive_name(archivename);
-    std::string filedata;
-    std::string delim = "[*#]";
-	size_t pos = 0;
+    std::string filedata, filedata_hmac;
+    std::string delim = "[#]", hmac_delim = "<*&>";
+	size_t pos = 0, pos1 = 0;
     std::vector<std::string> filedata_vector;
 	std::vector<std::string> filename_list;
 
+    
     // Check if archive exists
     if(!archive_name.is_open())
     {
@@ -30,15 +31,27 @@ int cstore_list(std::string archivename)
         return EXIT_FAILURE;
     }
 
-	// Read archive data to a string line by line and push in filedata_vector
-	while(getline(archive_name, filedata))
+    filedata_hmac = std::string((std::istreambuf_iterator<char>(archive_name)), std::istreambuf_iterator<char>());
+	
+	archive_name.close();
+
+	if((pos = filedata_hmac.find(hmac_delim)) != std::string::npos) 
 	{
-		while ((pos = filedata.find(delim)) != std::string::npos) 
-		{
-			filedata_vector.push_back(filedata.substr(0, pos));
-			filedata.erase(0, pos + delim.length());
-    	}
+		filedata_vector.push_back(filedata_hmac.substr(0, pos));
+		filedata_hmac.erase(0, pos + hmac_delim.length());
+		std::cout<<"\n=====================TRUNCATE HMAC FROM ARCHIVE=============";
+
 	}
+
+	filedata_vector.clear();
+
+
+	// Read archive data to a string line by line and push in filedata_vector
+	while ((pos1 = filedata_hmac.find(delim)) != std::string::npos) 
+    {
+        filedata_vector.push_back(filedata_hmac.substr(0, pos1));
+        filedata_hmac.erase(0, pos1 + delim.length());
+    }
 	
     //All Filenames will be at positions 0,3...
 	for(int i=0; i < filedata_vector.size();)
@@ -47,7 +60,7 @@ int cstore_list(std::string archivename)
 		i += 3;
 	}
 
-    std::ofstream list_file("list.txt", std::ios::trunc);
+    std::ofstream list_file("temp.txt", std::ios::trunc);
 
     for (int i=0; i<filename_list.size(); ++i){
 		list_file<<filename_list[i]<<std::endl;
@@ -55,6 +68,10 @@ int cstore_list(std::string archivename)
     
     list_file.close();
     archive_name.close();
+		
+    // Rename and replace archive with temp
+    remove("./list.txt");
+    rename("temp.txt","list.txt");
 
 
     return 0;

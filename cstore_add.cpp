@@ -87,6 +87,8 @@ int cstore_add(char* password, char* archivename, std::vector<std::string> &file
 		file_name.close();
 
 	}
+
+	/** Update HMAC **/
 	std::string filedata;
 
 	std::ifstream archive_name;
@@ -94,11 +96,9 @@ int cstore_add(char* password, char* archivename, std::vector<std::string> &file
 
 	filedata = std::string((std::istreambuf_iterator<char>(archive_name)), std::istreambuf_iterator<char>());
 
-	// Update HMAC
 	BYTE* new_hmac = (BYTE*) malloc(sizeof(BYTE) * SHA256_BLOCK_SIZE);
 
 	compute_new_hmac(archivename, new_hmac, final_hash);
-
 	
 	// Remove old hash from existing archive
 	std::vector<std::string> filedata_vector;
@@ -143,7 +143,12 @@ int cstore_add(char* password, char* archivename, std::vector<std::string> &file
 		std::cout<<"\n\nMessage size====="<<arch_len<<std::endl;
 		// Push new hmac to begin of file
 		std::ofstream temp("temp.txt", std::ios::trunc);
-		temp << (char*)new_hmac << "<*&>";
+		for(int i = 0; i < SHA256_BLOCK_SIZE; i++)
+		{
+			temp << new_hmac[i];
+		}
+		// temp << (char*)new_hmac << "<*&>";
+		temp << "<*&>";
 		for(int i =0; i<arch_len; i++)
 		{
 			temp << filedata[i];
