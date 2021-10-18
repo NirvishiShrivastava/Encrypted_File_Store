@@ -6,6 +6,8 @@
 #include <fstream>
 #include <string>
 #include <cstring>
+#include <iterator>
+#include <algorithm>
 using std::string;
 using std::ifstream; 
 using std::ostringstream;

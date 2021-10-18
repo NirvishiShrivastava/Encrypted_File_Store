@@ -9,6 +9,9 @@
 #include <fstream>
 #include <unistd.h>
 #include <sstream>
+#include <algorithm>
+#include <iterator>
+
 using std::string;
 using std::ifstream; 
 using std::ostringstream;
