@@ -11,16 +11,16 @@ using std::ifstream;
 using std::ostringstream;
 
 // Create error.txt, place your error message, and this will exit the program.
-// void die(const std::string error) 
-// {
-// 	std::ofstream new_error_file("error.txt", std::ios::out | std::ios::binary | std::ios::app);
-// 	if(!new_error_file.is_open()) {
-//         	std::cerr << "Could not write to error.txt" << std::endl; 
-// 	}
-// 	new_error_file << error << std::endl;
-// 	new_error_file.close();
-// 	exit(1);
-// }
+void die(const std::string error) 
+{
+	std::ofstream new_error_file("error.txt", std::ios::out | std::ios::binary | std::ios::app);
+	if(!new_error_file.is_open()) {
+        	std::cerr << "Could not write to error.txt" << std::endl; 
+	}
+	new_error_file << error << std::endl;
+	new_error_file.close();
+	exit(1);
+}
 
 
 int read_old_hmac(char* archivename, BYTE* file_mac)
@@ -44,7 +44,6 @@ int read_old_hmac(char* archivename, BYTE* file_mac)
 		archive_name.read((char*)array, length);
 		archive_name.close();
 	}
-    std::cout<<"\narray length =========================="<<length<<std::endl;
     
     for(int i = 0; i < length; i++)
     {
@@ -60,20 +59,11 @@ int read_old_hmac(char* archivename, BYTE* file_mac)
         mac_len++;
         hmac_str.push_back(array[i]);
     }
-    std::cout<<mac_len;
     std::vector<BYTE>::iterator it_beg, it_end;
     it_beg = hmac_str.end()-3;
     it_end = hmac_str.end();
     hmac_str.erase(it_beg, it_end);
 
-
-    std::cout<<"\nhmac_str after erase===============\n";
-    for(int i = 0; i < hmac_str.size(); i++)
-    {
-        std::cout<<hmac_str[i];
-    }
-
-   std::cout<<"\nhmac_str SIZE after erase========="<<hmac_str.size();
     for(int i = 0; i < mac_len; i++)
     {
         memcpy(file_mac,&hmac_str[0],hmac_str.size());
@@ -109,7 +99,6 @@ int compute_new_hmac(char* archivename, BYTE* out_tag, const BYTE* key)
 		archive_name.read((char*)array, length);
 		archive_name.close();
 	}
-    std::cout<<"\narray length =========================="<<length<<std::endl;
     
     for(int i = 0; i < length; i++)
     {
@@ -128,9 +117,6 @@ int compute_new_hmac(char* archivename, BYTE* out_tag, const BYTE* key)
     
     if(hmac_q.size() == length)
     {
-        std::cout<<"\nHex of initial message-\n";
-        print_hex(hmac_q);
-        std::cout<<"\n-First time file hmac-";
         hmac(&hmac_q[0], key, out_tag, hmac_q.size(), SHA256_BLOCK_SIZE);
 
     }
@@ -138,20 +124,13 @@ int compute_new_hmac(char* archivename, BYTE* out_tag, const BYTE* key)
     {
         int hmac_q_len = hmac_q.size();
         hmac_q.clear();
-        std::cout<<"\nNew Q length ===="<<hmac_q_len<<std::endl;
-        std::cout<<"\n\nMessage to take hmac for ---------"<<std::endl;
         for(int i = hmac_q_len+1; i<length; i++)
         {
             hmac_q.push_back(array[i]);
-            std::cout<<array[i];
         }
-        std::cout<<"\nHex of Captured message-\n";
-        print_hex(hmac_q);
         hmac(&hmac_q[0], key, out_tag, hmac_q.size(), SHA256_BLOCK_SIZE);
     }
 
-    std::cout<<"\nNew hash in compute ===="<<std::endl;
-    print_hex(out_tag,32);
     archive_name.close();
     filedata_vector.clear();
     hmac_q.clear();
@@ -160,23 +139,15 @@ int compute_new_hmac(char* archivename, BYTE* out_tag, const BYTE* key)
 
 int verify_hmacs(char* archivename, const BYTE* key)
 {
-    std::cout<<"\nI am in verify hmac---------"<<std::endl;
     BYTE* new_hmac = (BYTE*) malloc(sizeof(BYTE) * SHA256_BLOCK_SIZE);
     BYTE* old_hmac = (BYTE*) malloc(sizeof(BYTE) * SHA256_BLOCK_SIZE);
 
     int l1 = compute_new_hmac(archivename, new_hmac, key);
 
     int len = read_old_hmac(archivename, old_hmac);
-    std::cout << "\nThis is new====";
-    print_hex(new_hmac,l1);
-    std::cout << "\n\nNow old====";
-    print_hex(old_hmac,len);
 
-    //std::cout<<"LENGTH OF OLD HMAC"<<len<<std::cout;
     int res = memcmp (new_hmac, old_hmac, len);
-    std::cout << "\n  Size of length variable is "<<len;
-    
-    std::cout<<"RES == "<<res<<std::endl;
+
     if(res == 0)
     {
         return 1;
@@ -240,8 +211,6 @@ int hmac(const BYTE* message, const BYTE* key, BYTE* out_tag, int message_len, i
 
 int verify_archive_exists(char* archivename)
 {
-    std::cout<<"\nI am in verify_archive_exists-----"<<std::endl;
-
     std::fstream archive_name(archivename);
 
     archive_name.seekg(0, archive_name.end);
@@ -277,7 +246,6 @@ std::vector<BYTE> unpad_cbc(std::vector<BYTE> padded_data)
         i++;
 
     }
-    std::cout<<"Unpadded plaintext size -- "<<unpadded_plaintext.size()<<std::endl;
     return unpadded_plaintext;
 }
 

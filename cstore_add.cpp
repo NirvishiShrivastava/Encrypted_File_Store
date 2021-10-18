@@ -23,15 +23,12 @@ int cstore_add(char* password, char* archivename, std::vector<std::string> &file
 	// Check if archive already exists
 	
 	archive_exists = verify_archive_exists(archivename);
-	std::cout<<"archive_exists---------"<<archive_exists<<std::endl;
 	if(archive_exists)
 	{
 		int hmac_is_same = verify_hmacs(archivename, final_hash);
-		std::cout<<"HMAC IS SAME??---------"<<hmac_is_same<<std::endl;
 
 		if(!hmac_is_same)
 		{
-			std::cerr<<"Wrong password / archive has been modified!"<<std::endl;
 			return EXIT_FAILURE;
 		}
 	}
@@ -41,7 +38,6 @@ int cstore_add(char* password, char* archivename, std::vector<std::string> &file
 		std::vector<BYTE> plaintext;
 		std::string filename = files[file_iter];
 		std::ifstream file_name(filename);
-		std::cout<<"\n ----> File size: "<< files.size();
 
 		if(!file_name.is_open())
 		{
@@ -54,7 +50,6 @@ int cstore_add(char* password, char* archivename, std::vector<std::string> &file
 		{
 			plaintext.push_back(byte);
 		}
-		std::cout<<"Plaintext size before padding-- "<<plaintext.size()<<std::endl;
 
 		// Perform padding for plaintext
 		if(plaintext.size()%AES_BLOCK_SIZE != 0)
@@ -65,9 +60,6 @@ int cstore_add(char* password, char* archivename, std::vector<std::string> &file
 		blocks = plaintext.size() / AES_BLOCK_SIZE;
 
 		BYTE ciphertext[(blocks+1) * AES_BLOCK_SIZE];
-
-		std::cout<<"Plaintext size post padding-- "<<plaintext.size()<<std::endl;
-		std::copy(plaintext.begin(), plaintext.end(), std::ostream_iterator<char>(std::cout, ""));
 
 		// Get new IV
 		sample_urandom(IV, AES_BLOCK_SIZE);
@@ -110,15 +102,11 @@ int cstore_add(char* password, char* archivename, std::vector<std::string> &file
 	{
 		filedata_vector.push_back(filedata.substr(0, pos));
 		filedata.erase(0, pos + delim.length());
-		std::cout<<"\n\n======================DOES IT PRINT THIS===========222222==";
 
 	}
 
-	std::cout<<"\n\nFiledata vector size====="<<filedata_vector.size()<<std::endl;
-
 	if(filedata_vector.size() == 0)
 	{
-		std::cout<<"\n\nDid I enter in if?????";
 
 		int arch_len = filedata.length();
 		// Push new hmac to begin of file
@@ -138,9 +126,7 @@ int cstore_add(char* password, char* archivename, std::vector<std::string> &file
 	}
 	else
 	{
-		std::cout<<"\n\n======================DOES IT PRINT THIS=========333333333==";
 		int arch_len = filedata.length();
-		std::cout<<"\n\nMessage size====="<<arch_len<<std::endl;
 		// Push new hmac to begin of file
 		std::ofstream temp("temp.txt", std::ios::trunc);
 		for(int i = 0; i < SHA256_BLOCK_SIZE; i++)
@@ -161,8 +147,6 @@ int cstore_add(char* password, char* archivename, std::vector<std::string> &file
 		rename("temp.txt",archivename);
 
 	}
-	
-	
 	
 	return 0;
 }

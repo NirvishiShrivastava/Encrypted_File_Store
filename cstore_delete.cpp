@@ -27,7 +27,7 @@ int cstore_delete(char* password, char* archivename, std::vector<std::string> &f
 	BYTE final_hash[SHA256_BLOCK_SIZE];
 
 
-	std::cout<<"Delete called"<<std::endl;
+
 	std::fstream archive_name(archivename);
 
 	// Create Key
@@ -38,7 +38,6 @@ int cstore_delete(char* password, char* archivename, std::vector<std::string> &f
 	if(archive_exists)
 	{
 		int hmac_is_same = verify_hmacs(archivename, final_hash);
-		std::cout<<"HMAC IS SAME?-----"<<hmac_is_same<<std::endl;
 
 		if(!hmac_is_same)
 		{
@@ -56,7 +55,6 @@ int cstore_delete(char* password, char* archivename, std::vector<std::string> &f
 	{
 		filedata_vector.push_back(filedata_hmac.substr(0, pos));
 		filedata_hmac.erase(0, pos + hmac_delim.length());
-		std::cout<<"\n=====================TRUNCATE HMAC FROM ARCHIVE=============";
 
 	}
 
@@ -110,7 +108,6 @@ int cstore_delete(char* password, char* archivename, std::vector<std::string> &f
 	else
 	{
 		std::ofstream temp("temp.txt", std::ios::trunc);
-		std::cout<<"Post delete loop"<<std::endl;
 
 		// Add just the updated message content
 		for (int i=0; i<filedata_vector.size(); ++i)
@@ -133,10 +130,7 @@ int cstore_delete(char* password, char* archivename, std::vector<std::string> &f
 		BYTE* new_hmac = (BYTE*) malloc(sizeof(BYTE) * SHA256_BLOCK_SIZE);
 
 		compute_new_hmac(archivename, new_hmac, final_hash);
-		
-		
-		std::cout<<"\n\n======================DOES IT PRINT THIS=========333333333==";
-		
+				
 		// Push new hmac to begin of file
 		std::ofstream temp2("temp2.txt", std::ios::trunc);
 		temp2 << (char*)new_hmac << "<*&>";

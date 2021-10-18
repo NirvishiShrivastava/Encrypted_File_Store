@@ -39,7 +39,6 @@ int cstore_list(std::string archivename)
 	{
 		filedata_vector.push_back(filedata_hmac.substr(0, pos));
 		filedata_hmac.erase(0, pos + hmac_delim.length());
-		std::cout<<"\n=====================TRUNCATE HMAC FROM ARCHIVE=============";
 
 	}
 

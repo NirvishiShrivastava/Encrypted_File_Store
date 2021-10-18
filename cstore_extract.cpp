@@ -68,13 +68,6 @@ int cstore_extract(char* password, char* archivename, std::vector<std::string> &
 		filedata_hmac.erase(0, pos1 + delim.length());
 	}
 
-	std::cout<<"Printing Vector From now"<<std::endl;
-	for(int i = 0; i < filedata_vector.size();i++)
-	{
-		std::cout<<filedata_vector[i]<<std::endl;
-	}
-	std::cout<<"Printing Vector Ends now"<<std::endl;
-
 	// Extraction loop
 	for (int file_iter = 0; file_iter < files.size(); file_iter++) 
 	{
@@ -82,10 +75,7 @@ int cstore_extract(char* password, char* archivename, std::vector<std::string> &
 		it = std::find(filedata_vector.begin(),filedata_vector.end(),files[file_iter]);
 
    		int file_pos = std::distance(filedata_vector.begin(), it);
-		
-		// Blocks are next to filename
-		std::cout<<"Printing block in str----"<<filedata_vector[file_pos+1]<<std::endl;
-		
+			
 		try 
 		{
 			blocks = std::stoi(filedata_vector[file_pos+1]);
@@ -103,20 +93,12 @@ int cstore_extract(char* password, char* archivename, std::vector<std::string> &
 		std::ifstream file_name(filename);
 		std::vector<BYTE> decrypted_text;
 
-		std::cout<<"\n Blocks from file vector -- "<<blocks<<std::endl;
-
 		std::string cp = filedata_vector[file_pos+2];
-		std::cout<<"\n Respective cp -- "<<cp<<std::endl;
 		memcpy(ciphertext, cp.data(), cp.length());
 		
-		// // Create Key
-		// iterate_sha256(password, hash, 10000);
-		
+			
 		// Decrypt
 		decrypt_cbc(ciphertext, decrypted_text, hash, SHA256_BLOCK_SIZE, blocks);
-		
-		std::cout<<"Decrypted size -- "<<decrypted_text.size()<<std::endl;
-
 		
 		std::ofstream outfile("output.txt", std::ios::out);
 		outfile.write((const char *)&decrypted_text[0], decrypted_text.size());
